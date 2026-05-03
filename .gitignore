@@ -31,3 +31,6 @@ android/app/debug.keystore
 *.keystore
 *.jks
 android/key.properties
+# Firebase config — contains API keys. Inject via CI/CD secrets instead.
+android/app/google-services.json
+ios/Runner/GoogleService-Info.plist
