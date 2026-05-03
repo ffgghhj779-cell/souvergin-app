@@ -141,7 +141,7 @@ class _HomeAppBar extends ConsumerWidget {
             onTap: () {
               HapticFeedback.selectionClick();
               final newLocale = (locale == 'ar') ? 'en' : 'ar';
-              ref.read(localeProvider.notifier).state = Locale(newLocale);
+              ref.read(localeNotifierProvider.notifier).setLocale(Locale(newLocale));
               AnalyticsService.languageSwitched(newLocale);
             },
             child: Container(
@@ -275,14 +275,16 @@ class _FeaturedVisas extends ConsumerWidget {
               return Column(
                 children: [
                   // Large featured card
-                  SizedBox(
-                    height: 320,
-                    child: VisaCard(
-                      visa: featured[0],
-                      locale: locale,
-                      isFeatured: true,
-                      onTap: () =>
-                          context.go('/visas/${featured[0].slug}'),
+                  RepaintBoundary(
+                    child: SizedBox(
+                      height: 320,
+                      child: VisaCard(
+                        visa: featured[0],
+                        locale: locale,
+                        isFeatured: true,
+                        onTap: () =>
+                            context.go('/visas/${featured[0].slug}'),
+                      ),
                     ),
                   ).animate().fadeIn(duration: 400.ms, curve: Curves.easeOut).slideY(begin: 0.05, end: 0, duration: 400.ms, curve: Curves.easeOutCubic),
                   if (featured.length > 1) ...[
@@ -297,13 +299,15 @@ class _FeaturedVisas extends ConsumerWidget {
                               start: index == 0 ? 0 : 6,
                               end: index == 0 ? 6 : 0,
                             ),
-                            child: SizedBox(
-                              height: 220,
-                              child: VisaCard(
-                                visa: v,
-                                locale: locale,
-                                onTap: () =>
-                                    context.go('/visas/${v.slug}'),
+                            child: RepaintBoundary(
+                              child: SizedBox(
+                                height: 220,
+                                child: VisaCard(
+                                  visa: v,
+                                  locale: locale,
+                                  onTap: () =>
+                                      context.go('/visas/${v.slug}'),
+                                ),
                               ),
                             ),
                           ),

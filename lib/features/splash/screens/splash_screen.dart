@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/app_constants.dart';
+import '../../../core/providers/app_providers.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
@@ -15,19 +16,41 @@ class SplashScreen extends ConsumerStatefulWidget {
 class _SplashScreenState extends ConsumerState<SplashScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _pulseController;
+  bool _isFirstLaunch = true;
 
   @override
   void initState() {
     super.initState();
+
+    // ── Instant resume: check for a saved route ───────────────────────────
+    // SharedPreferences is pre-warmed in main(), so this read is synchronous.
+    final savedRoute = ref.read(appPersistenceProvider).lastRoute;
+    _isFirstLaunch = savedRoute == null || savedRoute.isEmpty;
+
     _pulseController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 2000),
-    )..repeat(reverse: true);
+    );
 
-    // Navigate after animation completes
-    Future.delayed(const Duration(milliseconds: 2800), () {
-      if (mounted) context.go('/home');
-    });
+    if (_isFirstLaunch) {
+      // First launch: play the full premium splash animation.
+      _pulseController.repeat(reverse: true);
+      Future.delayed(const Duration(milliseconds: 2800), () {
+        if (mounted) context.go('/home');
+      });
+    } else {
+      // Returning user: navigate on the very next frame — zero delay.
+      // The splash widget is shown for <1 frame then immediately replaced.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) context.go(savedRoute!);
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _pulseController.dispose();
+    super.dispose();
   }
 
   @override

@@ -58,6 +58,32 @@ class _LeadFormSheetState extends ConsumerState<LeadFormSheet> {
 
   bool get isAr => widget.locale == 'ar';
 
+  /// The draft key is the visaId — unique per visa, fully isolated.
+  String get _draftKey => widget.visaId;
+
+  @override
+  void initState() {
+    super.initState();
+    // ── Restore per-visa draft ────────────────────────────────────────────────
+    // Each visa has its own isolated draft namespace (keyed by visaId).
+    // A Schengen draft never bleeds into a Dubai draft.
+    final draft = ref.read(appPersistenceProvider).getLeadDraft(_draftKey);
+    _nameCtrl.text    = draft['name']    ?? '';
+    _emailCtrl.text   = draft['email']   ?? '';
+    _phoneCtrl.text   = draft['phone']   ?? '';
+    _messageCtrl.text = draft['message'] ?? '';
+
+    // ── Auto-save on every keystroke ─────────────────────────────────────────
+    _nameCtrl.addListener(
+        () => ref.read(appPersistenceProvider).saveLeadField(_draftKey, 'name', _nameCtrl.text));
+    _emailCtrl.addListener(
+        () => ref.read(appPersistenceProvider).saveLeadField(_draftKey, 'email', _emailCtrl.text));
+    _phoneCtrl.addListener(
+        () => ref.read(appPersistenceProvider).saveLeadField(_draftKey, 'phone', _phoneCtrl.text));
+    _messageCtrl.addListener(
+        () => ref.read(appPersistenceProvider).saveLeadField(_draftKey, 'message', _messageCtrl.text));
+  }
+
   @override
   void dispose() {
     _nameCtrl.dispose();
@@ -92,6 +118,8 @@ class _LeadFormSheetState extends ConsumerState<LeadFormSheet> {
             message: _messageCtrl.text.trim(),
           );
       _rateLimiter.recordSubmission();
+      // Draft submitted — clear this visa's isolated draft from persistence.
+      ref.read(appPersistenceProvider).clearLeadDraft(_draftKey);
       AnalyticsService.leadSubmitted(widget.visaId);
       setState(() => _isSuccess = true);
     } catch (e) {

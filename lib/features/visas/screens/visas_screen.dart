@@ -123,14 +123,16 @@ class VisasScreen extends ConsumerWidget {
                       return Padding(
                         padding: const EdgeInsets.only(
                             bottom: AppConstants.spacingMd),
-                        child: SizedBox(
-                          height: 260,
-                          child: VisaCard(
-                            visa: visas[i],
-                            locale: locale,
-                            isFeatured: i == 0,
-                            onTap: () =>
-                                context.go('/visas/${visas[i].slug}'),
+                        child: RepaintBoundary(
+                          child: SizedBox(
+                            height: 260,
+                            child: VisaCard(
+                              visa: visas[i],
+                              locale: locale,
+                              isFeatured: i == 0,
+                              onTap: () =>
+                                  context.go('/visas/${visas[i].slug}'),
+                            ),
                           ),
                         ),
                       )

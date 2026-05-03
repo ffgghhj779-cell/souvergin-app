@@ -27,6 +27,25 @@ class _ContactScreenState extends ConsumerState<ContactScreen> {
   final _rateLimiter = RateLimiter(cooldown: const Duration(seconds: 30));
 
   @override
+  void initState() {
+    super.initState();
+    // ── Restore draft from persistence ────────────────────────────────────
+    // Runs synchronously — SharedPreferences is pre-warmed in main().
+    final draft = ref.read(appPersistenceProvider).contactDraft;
+    _nameCtrl.text    = draft['name']    ?? '';
+    _emailCtrl.text   = draft['email']   ?? '';
+    _messageCtrl.text = draft['message'] ?? '';
+
+    // ── Auto-save on every keystroke ──────────────────────────────────────
+    _nameCtrl.addListener(
+        () => ref.read(appPersistenceProvider).saveContactField('name', _nameCtrl.text));
+    _emailCtrl.addListener(
+        () => ref.read(appPersistenceProvider).saveContactField('email', _emailCtrl.text));
+    _messageCtrl.addListener(
+        () => ref.read(appPersistenceProvider).saveContactField('message', _messageCtrl.text));
+  }
+
+  @override
   void dispose() {
     _nameCtrl.dispose();
     _emailCtrl.dispose();
@@ -58,6 +77,8 @@ class _ContactScreenState extends ConsumerState<ContactScreen> {
             message: _messageCtrl.text.trim(),
           );
       _rateLimiter.recordSubmission();
+      // Draft is fulfilled — clear it from persistence.
+      ref.read(appPersistenceProvider).clearContactDraft();
       if (mounted) setState(() { _isSubmitting = false; _isSuccess = true; });
     } catch (e) {
       if (mounted) {
