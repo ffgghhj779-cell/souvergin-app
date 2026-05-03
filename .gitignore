@@ -1,0 +1,33 @@
+# Flutter / Dart
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+build/
+*.iml
+
+# Android
+android/.gradle/
+android/captures/
+android/local.properties
+android/key.properties
+android/app/debug.keystore
+
+# macOS
+.DS_Store
+
+# IntelliJ / Android Studio
+.idea/
+*.ipr
+*.iws
+
+# VS Code — NEVER commit: may contain credentials in launch.json
+.vscode/
+
+# Assets (optional – include if committed)
+# assets/fonts/*.ttf
+
+# ── Secrets (MUST NOT be committed) ───────────────────────────────────────────
+.env
+*.keystore
+*.jks
+android/key.properties
